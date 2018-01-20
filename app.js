@@ -25,6 +25,7 @@ const dbName = process.env.DB_NAME
 var ref = firebase.app().database().ref(dbName);
 var usersRef = ref.child('users');
 var appPort = process.env.APP_PORT
+var localFolderName =  process.env.LOCAL_FOLDER_NAME
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -50,7 +51,7 @@ router.get('/images', function(req, res) {
             var key  = keys[i];
             var newData = data[key]
                 newData.id = keys[i]
-                newData.localFolderName="loocads"
+                newData.localFolderName=localFolderName
             delete newData.creatorId
             delete newData.campaignType
             delete newData.latitude
