@@ -8,6 +8,8 @@ var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var firebase = require('firebase');
+var async = require('async');
+var geolib = require('geolib');
 var _ = require('underscore')
 var env = require('node-env-file');
 env('.env');
@@ -57,6 +59,70 @@ router.get('/images', function(req, res) {
             }
 
         res.json(arr);    
+      }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+        res.json({message: "null"});   
+      });
+});
+
+
+router.post('/playlist', function(req, res) {
+    ref.on("value", function(snapshot) {
+        console.log(snapshot.val());
+        var arr  = [],
+        data = snapshot.val()
+        var keys = Object.keys(data);
+
+        var latitude = parseFloat(req.body.latitude)
+        var longitude = parseFloat(req.body.longitude)
+        var newData = []
+        var playlist = []
+        
+       
+
+            async.series({
+              arr:  function(cb) {
+                    for(var i=0,n=keys.length;i<n;i++){
+
+                        var key  = keys[i];
+                            newData = data[key]
+                            newData.id = keys[i]
+                            newData.localFolderName="loocads"
+                        delete newData.creatorId
+                        delete newData.campaignType
+                        
+                        arr.push(newData)
+                    }
+
+
+                    cb(null, arr);
+                },
+              playlist:  function(cb) {
+
+                    _.each(arr, function(post) {
+
+                        var radiusTest=parseInt(post.radius)*1000
+    
+                        var data = geolib.isPointInCircle(
+                            {latitude: latitude, longitude: longitude},
+                            {latitude: post.latitude, longitude: post.longitude},                        
+                            radiusTest
+                        );
+                        if(data){
+                            playlist.push(post)
+                        }  
+                        });
+
+                    // do some more stuff ...
+                    cb(null, playlist);
+                }
+            },
+            // optional callback
+            function(err, results) {
+                res.json(results.playlist); 
+            });
+
+           
       }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
         res.json({message: "null"});   

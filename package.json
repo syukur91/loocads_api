@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/syukur91/loocads_api#readme",
   "dependencies": {
+    "async": "^2.6.0",
     "express": "^4.16.2",
     "firebase": "^4.9.0",
     "geolib": "^2.0.24",
