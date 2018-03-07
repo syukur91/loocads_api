@@ -12,6 +12,7 @@ var async = require('async');
 var geolib = require('geolib');
 var _ = require('underscore')
 var env = require('node-env-file');
+var split = require('split-object')
 env('.env');
 var fb = firebase.initializeApp({ 
     apiKey: process.env.DB_KEY,
@@ -22,8 +23,10 @@ var fb = firebase.initializeApp({
     messagingSenderId: process.env.DB_SENDER_ID
   } );
 const dbName = process.env.DB_NAME
+const playlistDbName = process.env.PLAYLIST_DB_NAME
 var ref = firebase.app().database().ref(dbName);
-var usersRef = ref.child('users');
+var ref2 = firebase.app().database().ref(playlistDbName);
+var usersRef = ref.child('playlist2');
 var appPort = process.env.APP_PORT
 var localFolderName =  process.env.LOCAL_FOLDER_NAME
 
@@ -44,8 +47,7 @@ router.get('/images', function(req, res) {
         console.log(snapshot.val());
         var arr  = [],
         data = snapshot.val()
-        var keys = Object.keys(data);
-        
+        var keys = Object.keys(data);       
         for(var i=0,n=keys.length;i<n;i++){
 
             var key  = keys[i];
@@ -66,7 +68,6 @@ router.get('/images', function(req, res) {
         res.json({message: "null"});   
       });
 });
-
 
 router.post('/playlist', function(req, res) {
     ref.on("value", function(snapshot) {
@@ -128,6 +129,98 @@ router.post('/playlist', function(req, res) {
       }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
         res.json({message: "null"});   
+      });
+});
+
+router.post('/playlists', function(req, res) {
+    var campaigns = []
+    var playlist = []
+    var devicePlaylist = {}
+    var filteredImagelist = [];
+    var finalResult = {};
+    var newList = []
+    var finalList = []
+      async.series({
+        campaigns:  function(cb) {
+            //Get campaign list from firebase collection
+            ref.on("value", function(snapshot) {
+                console.log(snapshot.val());
+                var data = snapshot.val()
+                var keys = Object.keys(data);
+                
+                for(var i=0,n=keys.length;i<n;i++){
+        
+                    var key  = keys[i];
+                    var newData = data[key]
+                        newData.id = keys[i]
+                        newData.localFolderName=localFolderName
+                    delete newData.creatorId
+                    delete newData.campaignType
+                    delete newData.latitude
+                    delete newData.longitude
+                    delete newData.radius
+                    campaigns.push(newData)
+                    }
+                    cb(null, campaigns);
+              }, function (errorObject) {
+                console.log("The read failed: " + errorObject.code);
+                cb(errorObject, null);   
+              });
+         
+              
+          },
+        playlist:  function(cb) {
+            //Get created playlist from firebase collection
+            ref2.on("value", function(snapshot) {
+                console.log(snapshot.val());
+                var requestBody = req.body;
+                var arr  = [],
+                data = snapshot.val()           
+        
+                var arr = Object.keys(data.playlist2).map(function(k) { return data.playlist2[k] });
+        
+                 for(var i=0,n=arr.length;i<n;i++){
+                    var obj  = arr[i];
+                    var newAds = split(arr[i].ads).map(function(adsData) {return adsData})
+                    arr[i].ads = newAds;
+                }
+                //TODO: Map with active image from server
+                playlist = arr
+                cb(null, playlist); 
+              }, function (errorObject) {
+                console.log("The read failed: " + errorObject.code);
+                cb(errorObject, null); 
+              });        
+              // do some more stuff ...
+              
+          },
+        devicePlaylist:  function(cb) {
+            //Query the playlist by deviceId
+            devicePlaylist = _.findWhere(playlist, {deviceId: req.body.deviceId});
+            _.each(devicePlaylist.ads, function(item){
+                newList.push(item.value)
+            });
+            cb(null, devicePlaylist);
+          },
+        filteredImagelist:  function(cb) {  
+            //Find the difference between firebase playlist and device playlist        
+            filteredImagelist = _.difference(newList, req.body.imageList);
+            cb(null, filteredImagelist);
+          },
+        finalResult:  function(cb) {    
+            //Compose the final result    
+            _.each(filteredImagelist, function(item){
+                var obj = _.findWhere(campaigns, {id: item});
+                finalList.push(obj)
+            });
+            finalResult.list = filteredImagelist
+            finalResult.result = finalList
+            cb(null, finalResult);
+          }
+      },
+      // optional callback
+      function(err, results) {
+          res.json(results.finalResult); 
       });
 });
 

@@ -1,0 +1,118 @@
+[
+    {
+        "ads": [
+            {
+                "key": "adsId1",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId2",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            }
+        ],
+        "deducted": "n",
+        "deviceId": "KHB6745",
+        "imagePsg": "link atau id image screenshot passenger yang dikirim",
+        "played": "y",
+        "playlistId": 995,
+        "time": "Sat Mar 03 2018 22:59:24 GMT+0700 (WIB)"
+    },
+    {
+        "ads": [
+            {
+                "key": "adsId1",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId2",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId3",
+                "value": "-KxD3_4L_Fqzuk1Su-lP"
+            },
+            {
+                "key": "adsId4",
+                "value": "-KxkCYW79lU_ok7-hJYk"
+            }
+        ],
+        "deducted": "n",
+        "deviceId": "HTR7564",
+        "imagePsg": "link atau id image screenshot passenger yang dikirim",
+        "played": "y",
+        "playlistId": 996,
+        "time": "Sat Mar 03 2018 22:59:24 GMT+0700 (WIB)"
+    },
+    {
+        "ads": [
+            {
+                "key": "adsId1",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId2",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId3",
+                "value": "-KxD3_4L_Fqzuk1Su-lP"
+            },
+            {
+                "key": "adsId4",
+                "value": "-KxkEyb_gXoVLW4LERlg"
+            },
+            {
+                "key": "adsId5",
+                "value": "-KxkDV50ZtRdd2fgpIaw"
+            },
+            {
+                "key": "adsId6",
+                "value": "-KxkCYW79lU_ok7-hJYk"
+            }
+        ],
+        "deducted": "n",
+        "deviceId": "MHZ87999",
+        "imagePsg": "link atau id image screenshot passenger yang dikirim",
+        "played": "y",
+        "playlistId": 997,
+        "time": "Sat Mar 03 2018 22:59:24 GMT+0700 (WIB)"
+    },
+    {
+        "ads": [
+            {
+                "key": "adsId1",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId2",
+                "value": "-Kx97AMwtqmTwDYrTOaE"
+            },
+            {
+                "key": "adsId3",
+                "value": "-KxD3_4L_Fqzuk1Su-lP"
+            },
+            {
+                "key": "adsId4",
+                "value": "-KxkEyb_gXoVLW4LERlg"
+            },
+            {
+                "key": "adsId5",
+                "value": "-KxkDV50ZtRdd2fgpIaw"
+            },
+            {
+                "key": "adsId6",
+                "value": "-KxD3_4L_Fqzuk1Su-lP"
+            },
+            {
+                "key": "adsId7",
+                "value": "-Kx990NFhBPgYj5H5ptU"
+            }
+        ],
+        "deducted": "n",
+        "deviceId": "MHZ87999",
+        "imagePsg": "link atau id image screenshot passenger yang dikirim",
+        "played": "y",
+        "playlistId": 998,
+        "time": "Sat Mar 03 2018 22:59:24 GMT+0700 (WIB)"
+    }
+]
