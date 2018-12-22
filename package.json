@@ -21,6 +21,7 @@
     "express": "^4.16.2",
     "firebase": "^4.9.0",
     "geolib": "^2.0.24",
+    "moment": "^2.21.0",
     "node-env-file": "^0.1.8",
     "underscore": "^1.8.3"
   }

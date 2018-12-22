@@ -8,3 +8,6 @@
     messagingSenderId: "14476677496"
   };
   firebase.initializeApp(config);s
+
+
+  https://stackoverflow.com/questions/30678131/receive-data-synchronously-in-firebase
