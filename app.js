@@ -26,9 +26,24 @@ var fb = firebase.initializeApp({
 const dbName = process.env.DB_NAME
 const playlistDbName = process.env.PLAYLIST_DB_NAME
 const deviceDbName = process.env.DEVICES_DB_NAME
+
+const accOverviewDbName = process.env.ACC_OVERVIEW_DB_NAME
+const adsDbName = process.env.ADS_DB_NAME
+const campaignsDbName = process.env.CAMPAIGNS_DB_NAME
+
 var ref = firebase.app().database().ref(dbName);
 var ref2 = firebase.app().database().ref(playlistDbName);
 var ref3 = firebase.app().database().ref(deviceDbName);
+
+////===================////
+
+var accOverviewRef = firebase.app().database().ref(accOverviewDbName);
+var aadsDbNameRef = firebase.app().database().ref(adsDbName);
+var campaignsDbNameRef = firebase.app().database().ref(campaignsDbName);
+
+
+
+
 var usersRef = ref.child('playlist2');
 var appPort = process.env.APP_PORT
 var localFolderName =  process.env.LOCAL_FOLDER_NAME
@@ -65,7 +80,7 @@ router.get('/images', function(req, res) {
             delete newData.longitude
             delete newData.radius
             arr.push(newData)
-            }
+        }
 
         res.json(arr);    
       }, function (errorObject) {
@@ -433,6 +448,72 @@ router.get('/list', function(req, res) {
 
 
 router.get('/paging', function(req, res) {
+
+
+    list = {}
+
+    var pPage = req.query.per_page;
+    var cPage = req.query.page;
+    var filter = req.query.filter
+
+    perPage = parseInt(pPage)
+    currentPage = parseInt(cPage)
+    
+    list.total= 200
+    list.per_page= 15
+    list.current_page= currentPage
+    list.last_page = 14
+    list.next_page_url= "http://localhost:4443/paging?page="+currentPage
+    list.prev_page_url= (currentPage == 1 ? null : "http://localhost:4443/paging?page="+(currentPage-1));
+    list.from = 1
+    list.to= 15
+    list.data = []
+
+
+    var page = req.query.page || 1,
+	    per_page = req.query.per_page,
+        offset = (page - 1) * per_page;
+
+        ref.orderByKey().on("value", function(snapshot) {
+            
+            var arr  = [],
+            data = snapshot.val()
+            var keys = Object.keys(data);     
+            
+            for(var i=0,n=keys.length;i<n;i++){
+                var key  = keys[i];
+                var newData = data[key]
+                    newData.id = keys[i]
+                    newData.localFolderName=localFolderName
+                delete newData.creatorId
+                delete newData.campaignType
+                delete newData.latitude
+                delete newData.longitude
+                delete newData.radius
+                arr.push(newData)
+            }
+               
+
+            if(filter){
+                var obj = _.find(arr, function (obj) { return obj.campaignName.includes(filter); });
+                var newArr = []
+                newArr.push(obj)
+                list.data = newArr
+            }else{
+                var newArr = _.rest(arr, offset).slice(0, per_page);
+                list.data = newArr
+            }
+         
+            res.json(list);    
+          }, function (errorObject) {
+            console.log("The read failed: " + errorObject.code);
+            res.json({message: "null"});   
+          });
+    
+});
+
+
+router.get('/accountOverview', function(req, res) {
 
 
     list = {}
