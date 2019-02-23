@@ -18,11 +18,13 @@
   "homepage": "https://github.com/syukur91/loocads_api#readme",
   "dependencies": {
     "async": "^2.6.0",
+    "cors": "^2.8.5",
     "express": "^4.16.2",
     "firebase": "^4.9.0",
     "geolib": "^2.0.24",
     "moment": "^2.21.0",
     "node-env-file": "^0.1.8",
+    "split-object": "^2.1.1",
     "underscore": "^1.8.3"
   }
 }

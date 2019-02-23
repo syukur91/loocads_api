@@ -14,6 +14,10 @@ var _ = require('underscore')
 var env = require('node-env-file');
 var split = require('split-object')
 var moment = require('moment');
+
+var cors = require('cors')
+app.use(cors())
+
 env('.env');
 var fb = firebase.initializeApp({ 
     apiKey: process.env.DB_KEY,
