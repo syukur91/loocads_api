@@ -14,9 +14,49 @@ var _ = require('underscore')
 var env = require('node-env-file');
 var split = require('split-object')
 var moment = require('moment');
+var multer  = require('multer')
+const fs = require('fs')
+
+// var upload = multer({ dest: 'files/' })
+const disk = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'files/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  }
+})
+const upload = multer({storage: disk})
+
+// firebase storage config
+const mime = require('mime');
+const keyFilename="./google-service.json"; //replace this with api key file
+const projectId = "loocads-9db28" //replace with your project id
+const bucketName = `${projectId}.appspot.com`;
+
+
+
+
+// Imports the Google Cloud client library
+const {Storage} = require('@google-cloud/storage');
+
+// Creates a client
+const storage = new Storage({
+  projectId: projectId,
+  keyFilename: './loocads-9db28-6ee946c67674.json'
+});
+
+const bucket = storage.bucket(bucketName)
+
+
 
 var cors = require('cors')
 app.use(cors())
+app.options('*', cors());
+
+var corsOptions = {
+  methods: ['GET', 'PUT', 'POST']
+}
 
 env('.env');
 var fb = firebase.initializeApp({ 
@@ -34,6 +74,8 @@ const deviceDbName = process.env.DEVICES_DB_NAME
 const accOverviewDbName = process.env.ACC_OVERVIEW_DB_NAME
 const adsDbName = process.env.ADS_DB_NAME
 const campaignsDbName = process.env.CAMPAIGNS_DB_NAME
+const stagingDbName = process.env.ADS_DB_STAGING
+
 
 var ref = firebase.app().database().ref(dbName);
 var ref2 = firebase.app().database().ref(playlistDbName);
@@ -44,6 +86,9 @@ var ref3 = firebase.app().database().ref(deviceDbName);
 var accOverviewRef = firebase.app().database().ref(accOverviewDbName);
 var adsDbNameRef = firebase.app().database().ref(adsDbName);
 var campaignsDbNameRef = firebase.app().database().ref(campaignsDbName);
+
+var stagingDbNameRef = firebase.app().database().ref(stagingDbName);
+
 
 ////===================////
 
@@ -246,6 +291,8 @@ router.post('/playlists', function(req, res) {
           res.json(results.finalResult); 
       });
 });
+
+
 router.post('/devices', function(req, res) {
 var devices = []
 var finalResult = {}
@@ -694,6 +741,153 @@ router.get('/campaigns', function(req, res) {
             res.json({message: "null"});   
           });
     
+});
+
+router.post('/ad',upload.array('gallery', 12), function(req, res) {
+
+  var filename = req.files[0].originalname
+  var ext = filename.slice(filename.lastIndexOf('.'))
+  var uploadTo = `loocadsStaging/`+filename;
+
+    firebase.app().database().ref("loocadsStaging").push(req.body)
+        .then((data) => {
+          key = data.key
+          return key
+        })
+        .then(key => {
+          bucket.upload('./files/'+filename, {
+            destination: uploadTo,
+            public: true,
+            metadata: { cacheControl: "public, max-age=300" }
+          }, function (err, file) {
+            if (err) {
+                console.log(err);
+                res.json(err) 
+            }
+            console.log(`http://storage.googleapis.com/${bucketName}/${encodeURIComponent(uploadTo)}`);
+
+            const fileBucket = bucket.file('loocadsStaging/'+filename);
+            fileBucket.getSignedUrl({
+                action: 'read',
+                expires: '03-09-2491'
+              }).then(signedUrls => {
+                // signedUrls[0] contains the file's public URL
+                firebase.database().ref('loocadsStaging').child(key).update({imageUrl: signedUrls[0]})
+                try {
+                  fs.unlinkSync('files/'+filename)
+                } catch(err) {
+                  console.error(err)
+                }
+                return signedUrls; 
+              });
+            
+          })          
+          
+        })
+        .then(key => {
+            res.json(req.body) 
+        })
+        .catch((error) => {
+          console.log(error)
+          res.json(error) 
+        })
+    
+});
+
+
+
+router.get('/adlist', function(req, res) {
+
+
+  list = {}
+
+  var pPage = req.query.per_page;
+  var cPage = req.query.page;
+  var filter = req.query.filter
+
+  perPage = parseInt(pPage)
+  currentPage = parseInt(cPage)
+  
+  list.total= 200
+  list.per_page= 15
+  list.current_page= currentPage
+  list.last_page = 14
+  list.next_page_url= "http://localhost:4443/paging?page="+currentPage
+  list.prev_page_url= (currentPage == 1 ? null : "http://localhost:4443/paging?page="+(currentPage-1));
+  list.from = 1
+  list.to= 15
+  list.data = []
+
+
+  var page = req.query.page || 1,
+    per_page = req.query.per_page,
+      offset = (page - 1) * per_page;
+
+      stagingDbNameRef.orderByKey().on("value", function(snapshot) {
+          
+          var arr  = [],
+          data = snapshot.val()
+          var keys = Object.keys(data);     
+          
+          for(var i=0,n=keys.length;i<n;i++){
+              var key  = keys[i];
+              var newData = data[key]
+                  newData.id = keys[i]
+              arr.push(newData)
+          }
+             
+
+          if(filter){
+              var obj = _.find(arr, function (obj) { return obj.campaignName.includes(filter); });
+              var newArr = []
+              newArr.push(obj)
+              list.data = newArr
+          }else{
+              var newArr = _.rest(arr, offset).slice(0, per_page);
+              list.data = newArr
+          }
+       
+          res.json(list);    
+        }, function (errorObject) {
+          console.log("The read failed: " + errorObject.code);
+          res.json({message: "null"});   
+        });
+  
+});
+
+
+
+router.post('/mock', function(req, res) {
+
+  res.json({message: "coba"}); 
+
+});
+
+
+router.get('/ad/:id', function(req, res) {
+
+  const id = req.params.id;
+  firebase.app().database().ref("loocadsStaging/"+id).on('value', function (snap) {
+    res.json(snap.val()); 
+   });
+  
+
+});
+
+router.get('/mockImage', function(req, res) {
+
+  
+
+   const file = bucket.file('loocadsStaging/IMG_9930.PNG');
+   return file.getSignedUrl({
+    action: 'read',
+    expires: '03-09-2491'
+  }).then(signedUrls => {
+    // signedUrls[0] contains the file's public URL
+    res.json(signedUrls[0]); 
+  });
+  
+
 });
 
 // REGISTER OUR ROUTES -------------------------------
