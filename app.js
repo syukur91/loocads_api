@@ -890,6 +890,22 @@ router.get('/mockImage', function(req, res) {
 
 });
 
+
+router.delete('/ad/:id', function(req, res) {
+
+ const id = req.params.id;
+
+ firebase.database().ref('develop').child(id).update({deleted: 1})
+ .then(key => {
+  res.json(id) 
+})
+.catch((error) => {
+  console.log(error)
+  res.json(error) 
+});
+
+});
+
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /
 app.use('/', router);
