@@ -18,7 +18,7 @@
   "homepage": "https://github.com/syukur91/loocads_api#readme",
   "dependencies": {
     "@google-cloud/storage": "^2.4.3",
-    "async": "^2.6.0",
+    "async": "^3.2.2",
     "cors": "^2.8.5",
     "express": "^4.16.2",
     "firebase": "^4.9.0",
